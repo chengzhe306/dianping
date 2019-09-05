@@ -299,45 +299,50 @@
     <script type="text/javascript">
         apiready = function() {
             var touchID = api.require('touchID');
-            touchID.verify({
-               title: '验证指纹'
-            }, function(ret) {
+            touchID.isValid(function(ret) {
                 if (ret.status) {
-                    api.alert({ msg: "验证通过" });
-                    fnReadyOpenWin();
-                    if (!$api.getStorage('city')) {
-                        $api.setStorage('city', '北京');
-                    }
+                    touchID.verify({
+                       title: '验证指纹'
+                    }, function(ret) {
+                        if (ret.status) {
+                            api.alert({ msg: "验证通过" });
+                            fnReadyOpenWin();
+                            if (!$api.getStorage('city')) {
+                                $api.setStorage('city', '北京');
+                            }
 
-                    fnInitListener();
+                            fnInitListener();
 
-                    api.sendEvent({
-                        name: 'cityChange'
+                            api.sendEvent({
+                                name: 'cityChange'
+                            });
+
+                            fnInit();
+
+                            fnOpenDatabase();
+                            fnChange(0);
+                            fnGetLocation(function() {
+                                setTimeout(function() {
+                                    fnOpenWelcome();
+                                }, 100);
+                            });
+                        } else {
+                            if (ret.code == 0) {
+                                api.alert({ msg: "用户选择手动输入" });
+                            } else if (ret.code == 1) {
+                                api.alert({ msg: "用户取消验证" });
+                            } else if (ret.code == 2) {
+                                api.alert({ msg: "验证三次失败" });
+                            } else if (ret.code == 3) {
+                                api.alert({ msg: "多次验证失败请锁定手机" });
+                            } else {
+                                api.alert({ msg: "验证失败，未知错误" });
+                            }
+                        }
                     });
-
-                    fnInit();
-
-                    fnOpenDatabase();
-                    fnChange(0);
-                    fnGetLocation(function() {
-                        setTimeout(function() {
-                            fnOpenWelcome();
-                        }, 100);
-                    });
-                } else {
-                    if (ret.code == 0) {
-                        api.alert({ msg: "用户选择手动输入" });
-                    } else if (ret.code == 1) {
-                        api.alert({ msg: "用户取消验证" });
-                    } else if (ret.code == 2) {
-                        api.alert({ msg: "验证三次失败" });
-                    } else if (ret.code == 3) {
-                        api.alert({ msg: "多次验证失败请锁定手机" });
-                    } else {
-                        api.alert({ msg: "验证失败，未知错误" });
-                    }
                 }
             });
+            
         };
 
         function fnInitListener() {
